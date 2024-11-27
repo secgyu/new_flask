@@ -1,7 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router";
-import MainPage from "./pages/MainPage";
+import MainPage from "./pages/MainPage/MainPage";
 import './reset.css'
-import DevicePage from "./pages/DevicePage";
+import DevicePage from "./pages/DevicePage/DevicePage";
 
 const router = () => {
   return (
