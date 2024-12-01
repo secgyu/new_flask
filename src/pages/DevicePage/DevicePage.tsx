@@ -1,19 +1,39 @@
-import { useEffect, useState } from "react";
+import { MouseEventHandler, useCallback, useEffect, useState } from "react";
 import "./DevicePage.css";
 import { axiosInstance } from "../../api";
 import Device, { DeviceProps } from "./Device";
 
+const statusMap:Record<string, string> = {
+  all: "전체",
+  run: "켜짐",
+  stop: "꺼짐",
+};
+
 const DevicePage = () => {
   const [devices, setDevices] = useState<DeviceProps[]>([]);
-  useEffect(() => {
-    const fetchAndSet = async () => {
-      const res = await axiosInstance.get("/device_status");
-      setDevices(res.data);
-    };
-    const interverId = setInterval(fetchAndSet, 5000);
-    return ()=> clearInterval(interverId) 
+
+  const fetchAndSet = useCallback(async () => {
+    const res = await axiosInstance.get("/device_status");
+    setDevices(res.data);
   }, []);
-  
+
+  useEffect(() => {
+    fetchAndSet();
+    const intervalId = setInterval(fetchAndSet, 5000);
+    return () => clearInterval(intervalId);
+  }, [fetchAndSet]);
+
+  const [statusFilter, setStatusFilter] = useState<'all' | 'run' | 'stop'>("all");
+
+  const handleRadioClick: MouseEventHandler<HTMLInputElement> = (e) => {
+    setStatusFilter(e.currentTarget.value as 'all' | 'run' | 'stop');
+  };
+
+  const onDelete = async (id:string) => {
+    await axiosInstance.post(`http://localhost:5000/delete_device/${id}`);
+    await fetchAndSet();
+  };
+
   return (
     <div className="device-status-body">
       <header className="header">
@@ -32,18 +52,12 @@ const DevicePage = () => {
         <h1 className="page-title">기기 상태 관리</h1>
         <div className="search-wrap">
           <div className="search-options">
-            <div className="input-box">
-              <input type="radio" id="all" name="active_option" value="all" checked />
-              <label htmlFor="all">전체</label>
-            </div>
-            <div className="input-box">
-              <input type="radio" id="run" name="active_option" value="run" />
-              <label htmlFor="run">켜짐</label>
-            </div>
-            <div className="input-box">
-              <input type="radio" id="stop" name="active_option" value="stop" />
-              <label htmlFor="stop">꺼짐</label>
-            </div>
+            {["all", "run", "stop"].map((value) => (
+              <div className="input-box">
+                <input type="radio" id={value} name="active_option" value={value} checked={statusFilter === value} onClick={handleRadioClick} />
+                <label htmlFor={value}>{statusMap[value]}</label>
+              </div>
+            ))}
           </div>
           <div className="current_device">{/* <span>켜진 기기 / 전체 기기 <p> {{devices | selectattr('전원상태', 'equalto', true) | list | length}} / {{devices | length}} </p></span> */}</div>
         </div>
@@ -65,7 +79,7 @@ const DevicePage = () => {
             </thead>
             <tbody>
               {devices.map((device) => (
-                <Device {...device} key={device.id}/>
+                <Device {...device} key={device.id} onDelete={()=>onDelete(device.id)} />
               ))}
             </tbody>
           </table>

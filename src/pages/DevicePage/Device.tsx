@@ -1,4 +1,4 @@
-import React from "react";
+import { FormEventHandler } from "react";
 import "./DevicePage.css";
 
 export interface DeviceProps {
@@ -9,9 +9,16 @@ export interface DeviceProps {
   동작시간: string;
   마지막동작시간: string;
   비상: boolean;
+  onDelete: ()=>void;
 }
 
-const Device = ({ id, 디바이스명, 전원상태, 착용상태, 동작시간, 마지막동작시간, 비상 }: DeviceProps) => {
+const Device = ({ id, 디바이스명, 전원상태, 착용상태, 동작시간, 마지막동작시간, 비상, onDelete }: DeviceProps) => {
+
+  const handleDelete:FormEventHandler<HTMLFormElement> = (e)=>{
+    e.preventDefault();
+    onDelete();
+  }
+  
   return (
     <>
       <tr>
@@ -23,7 +30,7 @@ const Device = ({ id, 디바이스명, 전원상태, 착용상태, 동작시간,
         <td className="table-cell">{마지막동작시간 == "0" ? " " : 마지막동작시간}</td>
         <td className="table-cell">{비상 ? "🚨" : " "}</td>
         <td className="table-cell">
-          <form action={`/delete_device/${id}`} method="POST" className="delete-htmlForm">
+          <form onSubmit={handleDelete} method="POST" className="delete-htmlForm">
             <button type="submit" className="delete-button">
               삭제
             </button>
