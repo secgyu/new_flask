@@ -10,10 +10,10 @@ const DevicePage = () => {
       const res = await axiosInstance.get("/device_status");
       setDevices(res.data);
     };
-    fetchAndSet();
+    const interverId = setInterval(fetchAndSet, 5000);
+    return ()=> clearInterval(interverId) 
   }, []);
-  console.log(devices);
-
+  
   return (
     <div className="device-status-body">
       <header className="header">
@@ -65,7 +65,7 @@ const DevicePage = () => {
             </thead>
             <tbody>
               {devices.map((device) => (
-                <Device {...device} />
+                <Device {...device} key={device.id}/>
               ))}
             </tbody>
           </table>
