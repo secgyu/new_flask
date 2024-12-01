@@ -1,7 +1,19 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import "./DevicePage.css";
+import { axiosInstance } from "../../api";
+import Device, { DeviceProps } from "./Device";
 
 const DevicePage = () => {
+  const [devices, setDevices] = useState<DeviceProps[]>([]);
+  useEffect(() => {
+    const fetchAndSet = async () => {
+      const res = await axiosInstance.get("/device_status");
+      setDevices(res.data);
+    };
+    fetchAndSet();
+  }, []);
+  console.log(devices);
+
   return (
     <div className="device-status-body">
       <header className="header">
@@ -42,7 +54,6 @@ const DevicePage = () => {
           <table className="device-status-table">
             <thead>
               <tr>
-                <th className="table-header">ID</th>
                 <th className="table-header">디바이스명</th>
                 <th className="table-header">전원상태</th>
                 <th className="table-header">착용상태</th>
@@ -53,25 +64,9 @@ const DevicePage = () => {
               </tr>
             </thead>
             <tbody>
-              {/* {% htmlFor device in devices %}
-            <tr>
-              <!--<td className="table-cell">{{ device.id }}</td> -->
-              <td className="table-cell">{{ device.디바이스명 }}</td>
-              <td className="table-cell">{{ '켜짐' if device.전원상태 else '꺼짐' }}</td>
-              <td className="table-cell">{{ '착용' if device.착용상태 else '미착용' }}</td>
-              <td className="table-cell">{{ device.동작시간 }}</td>
-              <td className="table-cell">{{ ' ' if device.마지막동작시간 == "0" else device.마지막동작시간}}</td>
-              <td className="table-cell">
-                {{ '' if device.비상 else ''}}
-              </td>       
-              <td className="table-cell">
-                <!-- 삭제 버튼이 포함된 폼 추가 -->
-                <htmlForm action="/delete_device/{{ device.id }}" method="POST" className="delete-htmlForm">
-                  <button type="submit" className="delete-button">삭제</button>
-                </htmlForm>
-              </td>
-            </tr>
-            {% endhtmlFor %} */}
+              {devices.map((device) => (
+                <Device {...device} />
+              ))}
             </tbody>
           </table>
         </div>
